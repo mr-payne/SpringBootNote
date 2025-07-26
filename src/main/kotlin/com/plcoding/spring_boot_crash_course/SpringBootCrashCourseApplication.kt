@@ -8,4 +8,5 @@ class SpringBootCrashCourseApplication
 
 fun main(args: Array<String>) {
 	runApplication<SpringBootCrashCourseApplication>(*args)
+
 }
