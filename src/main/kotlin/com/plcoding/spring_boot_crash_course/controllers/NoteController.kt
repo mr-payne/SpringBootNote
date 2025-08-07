@@ -56,6 +56,33 @@ class NoteController(
         return note.toResponse()
     }
 
+    @PutMapping("/{id}")
+    fun update(
+        @PathVariable id: String,
+        @Valid @RequestBody body: NoteRequest
+    ): NoteResponse {
+        val ownerId = SecurityContextHolder.getContext().authentication.principal as String
+        val existingNote = repository.findById(ObjectId(id)).orElseThrow {
+            IllegalArgumentException("Note with id $id not found")
+        }
+
+        if (existingNote.ownerId.toHexString() != ownerId) {
+            throw IllegalArgumentException("You are not authorized to update this note.")
+        }
+
+        // Create an updated note instance, preserving the original ID, owner, and creation time
+        val updatedNote = Note(
+            id = existingNote.id,
+            title = body.title,
+            content = body.content,
+            color = body.color,
+            createdAt = existingNote.createdAt,
+            ownerId = existingNote.ownerId
+        )
+
+        return repository.save(updatedNote).toResponse()
+    }
+
     @GetMapping
     fun findByOwnerId(): List<NoteResponse> {
         val ownerId = SecurityContextHolder.getContext().authentication.principal as String
@@ -73,6 +100,20 @@ class NoteController(
         if(note.ownerId.toHexString() == ownerId) {
             repository.deleteById(ObjectId(id))
         }
+    }
+
+    @GetMapping(path = ["/{id}"])
+    fun findById(@PathVariable id: String): NoteResponse {
+        val ownerId = SecurityContextHolder.getContext().authentication.principal as String
+        val note = repository.findById(ObjectId(id)).orElseThrow {
+            IllegalArgumentException("Note not found")
+        }
+
+        if (note.ownerId.toHexString() != ownerId) {
+            throw IllegalArgumentException("Invalid Owner Id")
+        }
+
+        return note.toResponse()
     }
 }
 
