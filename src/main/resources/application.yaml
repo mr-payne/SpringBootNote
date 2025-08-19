@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: spring_boot_crash_course
+  profiles:
+    active: dev
+  data:
+    mongodb:
+      uri: ${MONGODB_CONNECTION_STRING}
+      auto-index-creation: true
+      # database not needed can be parsed from connection string
+      # database: ${MONGO_DB_NAME}
+server:
+  port: 8050
+jwt:
+  secret: ${JWT_SECRET_BASE_64}
+
+#spring.application.version: 0.0.1-SNAPSHOT
+#spring.application.name=spring_boot_crash_course
+#server.port=8050
+#spring.data.mongodb.uri=${MONGODB_CONNECTION_STRING}
+#spring.data.mongodb.auto-index-creation=true
+#jwt.secret=${JWT_SECRET_BASE_64}
+#spring.data.mongodb.database=${MONGO_DB_NAME}

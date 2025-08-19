@@ -2,15 +2,46 @@
 version: '3.8'
 
 services:
-  # This is the name of our service
+  # This is the name of our MongoDB service
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      # Map port 27017 on the host to 27017 in the container
+      # This is useful for connecting to the DB with a GUI client like Compass
+      - "27017:27017"
+    volumes:
+      # This persists the database data on the host machine
+      # Delete this line to use a temp container that will be destroyed when
+      # the container is removed.
+      - mongo-data:/data/db
+      # Mount the initialization script. The ':ro' makes it read-only in the container.
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    env_file:
+      - .env
+
+  # This is the name of our application service
   app:
     # Tell Docker Compose to build the image using the Dockerfile in this directory
     build: .
     # The 'image' key now names the image that Compose builds
     image: note-rest-api:0.0.1-SNAPSHOT
+    container_name: spring-boot-app
     ports:
       # Map port 8050 on the host to port 8050 in the container
       - "8080:8050"
     # Tell Docker Compose to load variables from the .env file
     env_file:
       - .env
+    # This ensures that the 'mongodb' service is started before the 'app' service
+    depends_on:
+      mongodb:
+        condition: service_started
+
+  # This defines the named volume used by the mongodb service
+  # Delete this section to have the container use a temporary db that is
+  # destroyed when the container is removed.
+volumes:
+  mongo-data:
+
+
